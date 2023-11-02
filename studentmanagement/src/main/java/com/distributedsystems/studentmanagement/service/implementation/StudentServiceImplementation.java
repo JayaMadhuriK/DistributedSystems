@@ -26,6 +26,7 @@ public class StudentServiceImplementation implements StudentService{
         if(existingStudent.isPresent()) {
             throw new AlreadyExistsException("Student with roll number already exists");
         }
+        log.info("student added");
         studentRepo.save(student);
     }
 

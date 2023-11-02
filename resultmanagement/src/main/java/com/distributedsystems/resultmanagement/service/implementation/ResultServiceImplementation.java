@@ -29,6 +29,7 @@ public class ResultServiceImplementation implements ResultService{
     RestTemplate restTemplate;
     @Override
     public void addResults(Results result) {
+        log.info("results added");
         resultRepo.save(result);
     }
 
