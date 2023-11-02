@@ -16,6 +16,9 @@ import com.distributedsystems.resultmanagement.entity.StudentResultCgpa;
 import com.distributedsystems.resultmanagement.repository.ResultRepository;
 import com.distributedsystems.resultmanagement.service.ResultService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ResultServiceImplementation implements ResultService{
     
@@ -24,7 +27,6 @@ public class ResultServiceImplementation implements ResultService{
     
     @Autowired
     RestTemplate restTemplate;
-
     @Override
     public void addResults(Results result) {
         resultRepo.save(result);
@@ -35,6 +37,7 @@ public class ResultServiceImplementation implements ResultService{
         RestTemplate restTemplate = new RestTemplate();
         Optional<Results> existingResult = resultRepo.getResultByRollNumber(universityRollNumber);
         StudentResult studentResult = restTemplate.getForObject("http://localhost:6061/"+universityRollNumber, StudentResult.class);
+        log.info("get result by roll number");
         studentResult.setResults(existingResult.get());
         if(existingResult.isEmpty()) {
             throw new NoSuchElementException("University RollNumber does not exists");
@@ -47,6 +50,7 @@ public class ResultServiceImplementation implements ResultService{
         RestTemplate restTemplate = new RestTemplate();
         List<Results> results = resultRepo.getResultAboveCgpa(cgpa);
         StudentResultCgpa[] studentResult = restTemplate.getForObject("http://localhost:6061/", StudentResultCgpa[].class);
+        log.info("get result less than cgpa");
         List<StudentResultCgpa> studentResultList = Arrays.asList(studentResult);
         List<StudentResultCgpa> studentResultCgpa = new ArrayList<>();
         for (StudentResultCgpa student : studentResultList) {

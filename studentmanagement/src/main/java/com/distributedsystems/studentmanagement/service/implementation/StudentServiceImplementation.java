@@ -11,6 +11,9 @@ import com.distributedsystems.studentmanagement.exception.AlreadyExistsException
 import com.distributedsystems.studentmanagement.repository.StudentRepository;
 import com.distributedsystems.studentmanagement.service.StudentService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class StudentServiceImplementation implements StudentService{
     
@@ -28,12 +31,14 @@ public class StudentServiceImplementation implements StudentService{
 
     @Override
     public List<Student> getStudents() {
+        log.info("get all students");
         List<Student> listOfStudents = studentRepo.findAll();
         return listOfStudents;
     }
 
     @Override
     public Optional<Student> getStudentByRollNumber(Long studentRollNumber) {
+        log.info("get students by roll number");
         Optional<Student> student = studentRepo.getStudentByRollNumber(studentRollNumber);
         if(student.isEmpty()) {
             throw new NoSuchElementException("RollNumber does not exists");
