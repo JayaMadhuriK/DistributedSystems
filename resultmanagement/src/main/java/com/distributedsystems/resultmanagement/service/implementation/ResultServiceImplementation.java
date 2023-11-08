@@ -1,14 +1,13 @@
 package com.distributedsystems.resultmanagement.service.implementation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.distributedsystems.resultmanagement.entity.Results;
 import com.distributedsystems.resultmanagement.entity.StudentResult;
@@ -25,8 +24,11 @@ public class ResultServiceImplementation implements ResultService{
     @Autowired
     ResultRepository resultRepo;
     
-    @Autowired
-    RestTemplate restTemplate;
+    private final WebClient webClient;
+
+    public ResultServiceImplementation(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
     @Override
     public void addResults(Results result) {
         log.info("results added");
@@ -35,9 +37,12 @@ public class ResultServiceImplementation implements ResultService{
 
     @Override
     public StudentResult getResult(Long universityRollNumber) {
-        RestTemplate restTemplate = new RestTemplate();
         Optional<Results> existingResult = resultRepo.getResultByRollNumber(universityRollNumber);
-        StudentResult studentResult = restTemplate.getForObject("http://localhost:6061/"+universityRollNumber, StudentResult.class);
+        StudentResult studentResult = webClient.get()
+                .uri("http://localhost:6061/"+universityRollNumber)
+                .retrieve()
+                .bodyToMono(StudentResult.class)
+                .block();
         log.info("get result by roll number");
         studentResult.setResults(existingResult.get());
         if(existingResult.isEmpty()) {
@@ -48,13 +53,16 @@ public class ResultServiceImplementation implements ResultService{
 
     @Override
     public List<StudentResultCgpa> getResults(double cgpa) {
-        RestTemplate restTemplate = new RestTemplate();
         List<Results> results = resultRepo.getResultAboveCgpa(cgpa);
-        StudentResultCgpa[] studentResult = restTemplate.getForObject("http://localhost:6061/", StudentResultCgpa[].class);
+        List<StudentResultCgpa> studentResult = webClient.get()
+                .uri("http://localhost:6061/")
+                .retrieve()
+                .bodyToFlux(StudentResultCgpa.class)
+                .collectList()
+                .block();
         log.info("get result less than cgpa");
-        List<StudentResultCgpa> studentResultList = Arrays.asList(studentResult);
         List<StudentResultCgpa> studentResultCgpa = new ArrayList<>();
-        for (StudentResultCgpa student : studentResultList) {
+        for (StudentResultCgpa student : studentResult) {
             for (Results result : results) {
                 if (student.getUniversityRollNumber().equals(result.getUniversityRollNumber())) {
                     student.setCgpa(result.getCgpa());
@@ -65,5 +73,4 @@ public class ResultServiceImplementation implements ResultService{
         }
         return studentResultCgpa;
     }
-
 }

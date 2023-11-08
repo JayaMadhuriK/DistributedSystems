@@ -21,8 +21,11 @@ public class PlacementServiceImplementation implements PlacementService{
 
     @Autowired
     PlacementsRepository placementRepo;
-    @Autowired
-    WebClient webClient;
+    private final WebClient webClient;
+
+    public PlacementServiceImplementation(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
     @Override
     public void addDetails(Placements placements) {
         log.info("add placementdetails");
