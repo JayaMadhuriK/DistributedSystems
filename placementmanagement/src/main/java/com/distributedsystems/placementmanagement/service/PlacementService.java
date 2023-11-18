@@ -5,5 +5,5 @@ import com.distributedsystems.placementmanagement.entity.StudentPlacements;
 
 public interface PlacementService {
     void addDetails(Placements placements);
-    StudentPlacements getPlacementDetails(Long placementId);
+    StudentPlacements getPlacementDetails(String companyName);
 }

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.distributedsystems.resultmanagement.entity.Results;
 import com.distributedsystems.resultmanagement.entity.StudentResult;
-import com.distributedsystems.resultmanagement.entity.StudentResultCgpa;
 import com.distributedsystems.resultmanagement.service.ResultService;
 
 @RestController
@@ -30,7 +29,7 @@ public class ResultController {
     }
     
     @GetMapping("/result/{cgpa}")
-    public List<StudentResultCgpa> getResults(@PathVariable double cgpa) {
+    public List<Results> getResults(@PathVariable double cgpa) {
         return resultService.getResults(cgpa);
     }
 }

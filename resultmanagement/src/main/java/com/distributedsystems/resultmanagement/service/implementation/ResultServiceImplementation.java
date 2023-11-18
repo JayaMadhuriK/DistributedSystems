@@ -1,19 +1,19 @@
 package com.distributedsystems.resultmanagement.service.implementation;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import com.distributedsystems.resultmanagement.entity.Results;
 import com.distributedsystems.resultmanagement.entity.StudentResult;
-import com.distributedsystems.resultmanagement.entity.StudentResultCgpa;
+import com.distributedsystems.resultmanagement.exception.AlreadyExistsException;
 import com.distributedsystems.resultmanagement.repository.ResultRepository;
 import com.distributedsystems.resultmanagement.service.ResultService;
+import com.distributedsystems.studentmanagement.exception.EmptyResultException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +31,10 @@ public class ResultServiceImplementation implements ResultService{
     }
     @Override
     public void addResults(Results result) {
+        Optional<Results> existingResult = resultRepo.getResultByRollNumber(result.getUniversityRollNumber());
+        if(existingResult.isPresent()) {
+            throw new AlreadyExistsException("Already assigned marks to this student");
+        }
         log.info("results added");
         resultRepo.save(result);
     }
@@ -38,39 +42,31 @@ public class ResultServiceImplementation implements ResultService{
     @Override
     public StudentResult getResult(Long universityRollNumber) {
         Optional<Results> existingResult = resultRepo.getResultByRollNumber(universityRollNumber);
-        StudentResult studentResult = webClient.get()
-                .uri("http://localhost:6061/"+universityRollNumber)
-                .retrieve()
-                .bodyToMono(StudentResult.class)
-                .block();
-        log.info("get result by roll number");
-        studentResult.setResults(existingResult.get());
         if(existingResult.isEmpty()) {
-            throw new NoSuchElementException("University RollNumber does not exists");
-        }        
+            throw new EmptyResultException("Cannot find student with rollnumber "+universityRollNumber);
+        }
+        StudentResult studentResult;
+        try {
+            studentResult= webClient.get()
+                    .uri("http://localhost:6061/"+universityRollNumber)
+                    .retrieve()
+                    .bodyToMono(StudentResult.class)
+                    .block();
+        }
+        catch(WebClientRequestException e) {
+            throw new EmptyResultException("No data received from Student management");
+        }
+        log.info("get result by roll number");
+        studentResult.setSubject1(existingResult.get().getSubject1());
+        studentResult.setSubject2(existingResult.get().getSubject2());
+        studentResult.setSubject3(existingResult.get().getSubject3());
+        studentResult.setCgpa(existingResult.get().getCgpa());
         return studentResult;
     }
 
     @Override
-    public List<StudentResultCgpa> getResults(double cgpa) {
+    public List<Results> getResults(double cgpa) {
         List<Results> results = resultRepo.getResultAboveCgpa(cgpa);
-        List<StudentResultCgpa> studentResult = webClient.get()
-                .uri("http://localhost:6061/")
-                .retrieve()
-                .bodyToFlux(StudentResultCgpa.class)
-                .collectList()
-                .block();
-        log.info("get result less than cgpa");
-        List<StudentResultCgpa> studentResultCgpa = new ArrayList<>();
-        for (StudentResultCgpa student : studentResult) {
-            for (Results result : results) {
-                if (student.getUniversityRollNumber().equals(result.getUniversityRollNumber())) {
-                    student.setCgpa(result.getCgpa());
-                    studentResultCgpa.add(student);
-                    break;
-                }
-            }
-        }
-        return studentResultCgpa;
+        return results;
     }
 }

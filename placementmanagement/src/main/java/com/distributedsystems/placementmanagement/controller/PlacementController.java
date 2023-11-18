@@ -22,8 +22,8 @@ public class PlacementController {
         placementService.addDetails(placements);
     }
     
-    @GetMapping("/{placementId}")
-    public StudentPlacements getPlacementDetails(@PathVariable Long placementId) {
-        return placementService.getPlacementDetails(placementId);
+    @GetMapping("/{companyName}")
+    public StudentPlacements getPlacementDetails(@PathVariable String companyName) {
+        return placementService.getPlacementDetails(companyName);
     }
 }

@@ -3,12 +3,11 @@ package com.distributedsystems.studentmanagement.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class AlreadyExistsException extends RuntimeException {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class EmptyResultException extends RuntimeException {
     
-  public AlreadyExistsException(final String message) {
+  public EmptyResultException(final String message) {
     super(message);
   }
   
 }
-

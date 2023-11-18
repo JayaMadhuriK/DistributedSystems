@@ -1,4 +1,4 @@
-package com.distributedsystems.studentmanagement.exception;
+package com.distributedsystems.placementmanagement.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

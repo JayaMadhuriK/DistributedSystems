@@ -1,13 +1,13 @@
 package com.distributedsystems.studentmanagement.service.implementation;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.distributedsystems.studentmanagement.entity.Student;
 import com.distributedsystems.studentmanagement.exception.AlreadyExistsException;
+import com.distributedsystems.studentmanagement.exception.EmptyResultException;
 import com.distributedsystems.studentmanagement.repository.StudentRepository;
 import com.distributedsystems.studentmanagement.service.StudentService;
 
@@ -42,7 +42,7 @@ public class StudentServiceImplementation implements StudentService{
         log.info("get students by roll number");
         Optional<Student> student = studentRepo.getStudentByRollNumber(studentRollNumber);
         if(student.isEmpty()) {
-            throw new NoSuchElementException("RollNumber does not exists");
+            throw new EmptyResultException("RollNumber does not exists");
         }
         return student;
     }

@@ -1,13 +1,15 @@
-package com.distributedsystems.resultmanagement.entity;
+package com.distributedsystems.placementmanagement.entity;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class StudentResultCgpa {
+@NoArgsConstructor
+public class Student {
     private Long universityRollNumber;
     private String firstName;
     private String lastName;
