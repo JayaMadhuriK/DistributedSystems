@@ -1,16 +1,15 @@
 package com.distributedsystems.resultmanagement.service.implementation;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.distributedsystems.resultmanagement.entity.Results;
 import com.distributedsystems.resultmanagement.entity.StudentResult;
-import com.distributedsystems.resultmanagement.exception.AlreadyExistsException;
 import com.distributedsystems.resultmanagement.repository.ResultRepository;
 import com.distributedsystems.resultmanagement.service.ResultService;
 import com.distributedsystems.studentmanagement.exception.EmptyResultException;
@@ -30,20 +29,22 @@ public class ResultServiceImplementation implements ResultService{
         this.webClient = webClientBuilder.build();
     }
     @Override
-    public void addResults(Results result) {
-        Optional<Results> existingResult = resultRepo.getResultByRollNumber(result.getUniversityRollNumber());
-        if(existingResult.isPresent()) {
-            throw new AlreadyExistsException("Already assigned marks to this student");
+    public void updateResults(Long rollNumber, Results result) {
+        Results existingResult = resultRepo.getResultByRollNumber(rollNumber);
+        if(existingResult == null) {
+            throw new EmptyResultException("Student with RollNumber "+rollNumber+" doesn't exists");
         }
+        existingResult.setMarks(result.getMarks());
+        existingResult.setCgpa(result.getCgpa());
         log.info("results added");
-        resultRepo.save(result);
+        resultRepo.save(existingResult);
     }
 
     @Override
     public StudentResult getResult(Long universityRollNumber) {
-        Optional<Results> existingResult = resultRepo.getResultByRollNumber(universityRollNumber);
-        if(existingResult.isEmpty()) {
-            throw new EmptyResultException("Cannot find student with rollnumber "+universityRollNumber);
+        Results existingResult = resultRepo.getResultByRollNumber(universityRollNumber);
+        if(existingResult == null) {
+            throw new EmptyResultException("Student with RollNumber "+universityRollNumber+" doesn't exists");
         }
         StudentResult studentResult;
         try {
@@ -53,20 +54,27 @@ public class ResultServiceImplementation implements ResultService{
                     .bodyToMono(StudentResult.class)
                     .block();
         }
+        catch(WebClientResponseException ex) {
+            throw new EmptyResultException("No data received from Student management");
+        }
         catch(WebClientRequestException e) {
             throw new EmptyResultException("No data received from Student management");
         }
         log.info("get result by roll number");
-        studentResult.setSubject1(existingResult.get().getSubject1());
-        studentResult.setSubject2(existingResult.get().getSubject2());
-        studentResult.setSubject3(existingResult.get().getSubject3());
-        studentResult.setCgpa(existingResult.get().getCgpa());
+        studentResult.setMarks(existingResult.getMarks());
+        studentResult.setCgpa(existingResult.getCgpa());
         return studentResult;
     }
 
     @Override
     public List<Results> getResults(double cgpa) {
         List<Results> results = resultRepo.getResultAboveCgpa(cgpa);
+        log.info("get all results");
         return results;
+    }
+    @Override
+    public void addResults(Results result) {
+        log.info("result added");
+        resultRepo.save(result);
     }
 }

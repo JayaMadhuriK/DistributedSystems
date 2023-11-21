@@ -7,18 +7,18 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 @Entity
 public class Results {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long resultId;
     private Long universityRollNumber;
-    private int subject1;
-    private int subject2;
-    private int subject3;
+    private int marks;
     private double cgpa;
 }

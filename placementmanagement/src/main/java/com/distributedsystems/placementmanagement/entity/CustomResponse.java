@@ -1,5 +1,6 @@
 package com.distributedsystems.placementmanagement.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,8 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Results {
-    private Long universityRollNumber;
-    private int marks;
-    private double cgpa;
+@AllArgsConstructor
+public class CustomResponse {
+    private int statusCode;
+    private String message;
+    private String timeStamp;
 }

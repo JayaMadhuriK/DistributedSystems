@@ -16,8 +16,6 @@ public class StudentResult {
     private Course course;
     @Enumerated(EnumType.STRING)
     private Year year;
-    private int subject1;
-    private int subject2;
-    private int subject3;
+    private int marks;
     private double cgpa;
 }

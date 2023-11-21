@@ -93,7 +93,7 @@ public class PlacementServiceImplementation implements PlacementService{
         }
         StudentPlacements studentPlacements = new StudentPlacements();
         studentPlacements.setPlacements(placements.get());
-        studentPlacements.setStudentResult(students);
+        studentPlacements.setStudentResult(studentResultCgpa);
         return studentPlacements;
     }
 

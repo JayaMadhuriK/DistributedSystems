@@ -1,4 +1,4 @@
-package com.distributedsystems.placementmanagement.entity;
+package com.distributedsystems.studentmanagement.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Results {
+    private Long resultId;
     private Long universityRollNumber;
     private int marks;
     private double cgpa;
