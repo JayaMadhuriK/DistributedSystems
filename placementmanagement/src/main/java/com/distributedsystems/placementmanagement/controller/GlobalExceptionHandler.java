@@ -24,6 +24,15 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(customResponse,HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<CustomResponse> handleRuntimeException(RuntimeException e) {
+        CustomResponse customResponse = new CustomResponse(
+                400,
+                e.getMessage(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+        return new ResponseEntity<>(customResponse,HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<CustomResponse> handleEmptyException(AlreadyExistsException e) {
         CustomResponse customResponse = new CustomResponse(

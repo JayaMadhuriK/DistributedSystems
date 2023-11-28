@@ -16,6 +16,8 @@ import com.distributedsystems.studentmanagement.exception.EmptyResultException;
 import com.distributedsystems.studentmanagement.repository.StudentRepository;
 import com.distributedsystems.studentmanagement.service.StudentService;
 
+import brave.Span;
+import brave.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -25,16 +27,19 @@ public class StudentServiceImplementation implements StudentService{
     
     @Autowired
     StudentRepository studentRepo;
-    
+    private final Tracer tracer;
     private final WebClient webClient;
 
-    public StudentServiceImplementation(WebClient.Builder webClientBuilder) {
+    public StudentServiceImplementation(WebClient.Builder webClientBuilder, Tracer tracer) {
         this.webClient = webClientBuilder.build();
+        this.tracer = tracer;
     }
     @Override
     public void addStudents(Student student) {
+        Span span = tracer.currentSpan();
         Optional<Student> existingStudent = studentRepo.getStudentByRollNumber(student.getUniversityRollNumber());
         if(existingStudent.isPresent()) {
+            span.tag("execption-type","AlreadyExistsException");
             throw new AlreadyExistsException("Student with roll number already exists");
         }
         Results result = new Results();
@@ -47,10 +52,12 @@ public class StudentServiceImplementation implements StudentService{
             .bodyToMono(Void.class)
             .block();
         }catch(WebClientResponseException ex) {
-            throw new EmptyResultException("Failed to insert into results");
+            span.tag("execption-type","WebClientResponseException");
+            throw new RuntimeException("Failed to insert into results");
         }
         catch(WebClientRequestException e) {
-            throw new EmptyResultException("Failed to insert into results");
+            span.tag("execption-type","WebClientRequestException");
+            throw new RuntimeException("Failed to insert into results");
         }
         log.info("student added");
         studentRepo.save(student);
@@ -65,9 +72,11 @@ public class StudentServiceImplementation implements StudentService{
 
     @Override
     public Optional<Student> getStudentByRollNumber(Long studentRollNumber) {
+        Span span = tracer.currentSpan();
         log.info("get students by roll number");
         Optional<Student> student = studentRepo.getStudentByRollNumber(studentRollNumber);
         if(student.isEmpty()) {
+            span.tag("execption-type","EmptyResultException");
             throw new EmptyResultException("RollNumber does not exists");
         }
         return student;
