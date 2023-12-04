@@ -18,7 +18,6 @@ import com.distributedsystems.placementmanagement.exception.AlreadyExistsExcepti
 import com.distributedsystems.placementmanagement.exception.EmptyResultException;
 import com.distributedsystems.placementmanagement.repository.PlacementsRepository;
 import com.distributedsystems.placementmanagement.service.PlacementService;
-
 import brave.Span;
 import brave.Tracer;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +30,7 @@ public class PlacementServiceImplementation implements PlacementService{
     PlacementsRepository placementRepo;
     private final WebClient webClient;
     private final Tracer tracer;
-
+    
     public PlacementServiceImplementation(WebClient.Builder webClientBuilder, Tracer tracer) {
         this.webClient = webClientBuilder.build();
         this.tracer = tracer;
@@ -108,5 +107,4 @@ public class PlacementServiceImplementation implements PlacementService{
         studentPlacements.setStudentResult(studentResultCgpa);
         return studentPlacements;
     }
-
 }
