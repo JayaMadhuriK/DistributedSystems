@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.distributedsystems.resultmanagement.entity.CustomResponse;
-import com.distributedsystems.studentmanagement.exception.AlreadyExistsException;
-import com.distributedsystems.studentmanagement.exception.EmptyResultException;
+import com.distributedsystems.resultmanagement.exception.AlreadyExistsException;
+import com.distributedsystems.resultmanagement.exception.EmptyResultException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

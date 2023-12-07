@@ -12,7 +12,7 @@ import com.distributedsystems.resultmanagement.entity.Results;
 import com.distributedsystems.resultmanagement.entity.StudentResult;
 import com.distributedsystems.resultmanagement.repository.ResultRepository;
 import com.distributedsystems.resultmanagement.service.ResultService;
-import com.distributedsystems.studentmanagement.exception.EmptyResultException;
+import com.distributedsystems.resultmanagement.exception.EmptyResultException;
 
 import brave.Span;
 import brave.Tracer;

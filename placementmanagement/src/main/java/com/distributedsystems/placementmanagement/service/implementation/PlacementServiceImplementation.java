@@ -35,6 +35,7 @@ public class PlacementServiceImplementation implements PlacementService{
         this.webClient = webClientBuilder.build();
         this.tracer = tracer;
     }
+    
     @Override
     public void addDetails(Placements placements) {
         Span span = tracer.currentSpan();
