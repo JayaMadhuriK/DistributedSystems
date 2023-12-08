@@ -1,8 +1,9 @@
 package com.pubsub.publisher.service;
 
 import org.springframework.integration.annotation.MessagingGateway;
+import org.springframework.messaging.Message;
 
-@MessagingGateway(name = "gateway", defaultRequestChannel = "pubsubOutputChannel")
+@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
 public interface PubsubOutboundGateway {
-    void sendToPubsub(String text);
+    void sendToPubsub(Message<?> pubsubMessage);
 }

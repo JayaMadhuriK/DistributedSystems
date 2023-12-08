@@ -1,6 +1,8 @@
 package com.pubsub.internalsubscriber.config;
 
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -14,11 +16,17 @@ import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAd
 import com.pubsub.internalsubscriber.dto.CustomResponse;
 import com.pubsub.internalsubscriber.dto.StudentPlacements;
 
+import brave.Tracer;
+import brave.propagation.TraceContext;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
 public class PubSubSubscriberConfig {
+    
+    @Value("${pubsub.subscription-name}")
+    private String subscriptionName;
     
     private final WebClient webClient;
 
@@ -31,7 +39,7 @@ public class PubSubSubscriberConfig {
       @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
       PubSubTemplate pubSubTemplate) {
         PubSubInboundChannelAdapter adapter =
-          new PubSubInboundChannelAdapter(pubSubTemplate, "Demo2-sub");
+          new PubSubInboundChannelAdapter(pubSubTemplate, subscriptionName);
         adapter.setOutputChannel(inputChannel);
         log.info("messageChannelAdapter invoked");
         return adapter;
@@ -45,11 +53,22 @@ public class PubSubSubscriberConfig {
     
     @Bean
     @ServiceActivator(inputChannel = "pubsubInputChannel")
-    public MessageHandler messageReceiver() {
+    public MessageHandler messageReceiver(Tracer tracer, MeterRegistry meterRegistry) {
         return message -> {
           log.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
           String companyName = new String((byte[]) message.getPayload());
           try {
+              String customTraceId = (String) message.getHeaders().get("trace-id");
+              if (customTraceId != null) {
+                  TraceContext traceContext = TraceContext.newBuilder()
+                          .traceId(Long.parseUnsignedLong(customTraceId, 16))
+                          .spanId(1)
+                          .build();
+                  MDC.put("traceId", traceContext.traceIdString());
+                  MDC.put("spanId", "1");
+                  tracer.withSpanInScope(tracer.newChild(traceContext));
+                  meterRegistry.config().commonTags("traceId", customTraceId);
+              }
               StudentPlacements studentPlacements= webClient
                       .get()
                       .uri("http://localhost:6063/"+companyName)
@@ -67,5 +86,4 @@ public class PubSubSubscriberConfig {
           }
         };
     }
-    
 }

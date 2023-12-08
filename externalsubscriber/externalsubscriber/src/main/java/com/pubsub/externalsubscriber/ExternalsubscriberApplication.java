@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication
 public class ExternalsubscriberApplication {
+    
     @Bean
     public WebClient webClient() {
       return WebClient.builder().build();
