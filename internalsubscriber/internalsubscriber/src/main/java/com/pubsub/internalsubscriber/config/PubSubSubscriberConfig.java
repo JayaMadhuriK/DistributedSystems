@@ -1,6 +1,5 @@
 package com.pubsub.internalsubscriber.config;
 
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -64,8 +63,8 @@ public class PubSubSubscriberConfig {
                           .traceId(Long.parseUnsignedLong(customTraceId, 16))
                           .spanId(1)
                           .build();
-                  MDC.put("traceId", traceContext.traceIdString());
-                  MDC.put("spanId", "1");
+//                  MDC.put("traceId", traceContext.traceIdString());
+//                  MDC.put("spanId", "1");
                   tracer.withSpanInScope(tracer.newChild(traceContext));
                   meterRegistry.config().commonTags("traceId", customTraceId);
               }

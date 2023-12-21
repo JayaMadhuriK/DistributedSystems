@@ -65,7 +65,7 @@ public class PubSubSubscriberConfig {
                           .traceId(Long.parseUnsignedLong(customTraceId, 16))
                           .spanId(1)
                           .build();
-                  MDC.put("traceId", traceContext.traceIdString());
+                  MDC.put("execution-Id", traceContext.traceIdString());
                   tracer.withSpanInScope(tracer.newChild(traceContext));
                   meterRegistry.config().commonTags("traceId", customTraceId);
               }else {
