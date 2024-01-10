@@ -12,7 +12,6 @@ public class ExternalsubscriberApplication {
     public WebClient webClient() {
       return WebClient.builder().build();
     }
-    
 	public static void main(String[] args) {
 		SpringApplication.run(ExternalsubscriberApplication.class, args);
 	}
