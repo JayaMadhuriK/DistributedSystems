@@ -1,4 +1,4 @@
-package com.pubsub.externalsubscriber.config;
+package com.pubsub.internalsubscriber.config;
 
 import java.util.Collections;
 import java.util.Map;
@@ -9,7 +9,6 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import com.google.cloud.logging.Payload.JsonPayload;
 import com.google.cloud.logging.Severity;
-
 
 public class DemoLogEntry {
    

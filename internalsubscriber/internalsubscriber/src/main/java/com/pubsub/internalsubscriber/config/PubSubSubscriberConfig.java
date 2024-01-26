@@ -1,5 +1,10 @@
 package com.pubsub.internalsubscriber.config;
 
+import java.util.NoSuchElementException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +16,12 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.AckMode;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import com.google.common.collect.ImmutableMap;
+import com.pubsub.externalsubscriber.config.DemoLogEntry;
 import com.pubsub.internalsubscriber.dto.CustomResponse;
 import com.pubsub.internalsubscriber.dto.StudentPlacements;
 
@@ -40,6 +50,7 @@ public class PubSubSubscriberConfig {
         PubSubInboundChannelAdapter adapter =
           new PubSubInboundChannelAdapter(pubSubTemplate, subscriptionName);
         adapter.setOutputChannel(inputChannel);
+        adapter.setAckMode(AckMode.MANUAL);
         log.info("messageChannelAdapter invoked");
         return adapter;
     }
@@ -54,8 +65,12 @@ public class PubSubSubscriberConfig {
     @ServiceActivator(inputChannel = "pubsubInputChannel")
     public MessageHandler messageReceiver(Tracer tracer, MeterRegistry meterRegistry) {
         return message -> {
+          Logger log = LoggerFactory.getLogger(getClass());
           log.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
           String companyName = new String((byte[]) message.getPayload());
+          BasicAcknowledgeablePubsubMessage originalMessage =
+                  message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
+          originalMessage.ack();
           try {
               String customTraceId = (String) message.getHeaders().get("trace-id");
               if (customTraceId != null) {
@@ -63,10 +78,21 @@ public class PubSubSubscriberConfig {
                           .traceId(Long.parseUnsignedLong(customTraceId, 16))
                           .spanId(1)
                           .build();
-//                  MDC.put("traceId", traceContext.traceIdString());
-//                  MDC.put("spanId", "1");
                   tracer.withSpanInScope(tracer.newChild(traceContext));
                   meterRegistry.config().commonTags("traceId", customTraceId);
+              }
+              else {
+                  throw new NoSuchElementException();
+              }
+              try {
+                  DemoLogEntry.writeLogs("internal-sub-Message-Arrived", 
+                          ImmutableMap.of(
+                                  "traceId",MDC.get("traceId"),
+                                  "spanId",MDC.get("spanId"))
+                          );
+                  log.info("calling demo-log");
+              } catch (Exception e) {
+                  log.error("Error writing logs to Google Cloud Logging", e);
               }
               StudentPlacements studentPlacements= webClient
                       .get()

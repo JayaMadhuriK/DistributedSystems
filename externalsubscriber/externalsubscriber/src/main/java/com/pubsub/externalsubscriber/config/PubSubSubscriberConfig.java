@@ -69,7 +69,6 @@ public class PubSubSubscriberConfig {
           originalMessage.ack();
           try {
               String customTraceId = (String) message.getHeaders().get("trace-id");
-//              String customTraceId = "294382";
               if (customTraceId != null) {
                   TraceContext traceContext = TraceContext.newBuilder()
                           .traceId(Long.parseUnsignedLong(customTraceId, 16))
